@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.text.SimpleDateFormat;
 
 /**
  * Date related utility methods and constants
@@ -57,6 +58,7 @@ public class DateUtils {
         calendar.setTime(date);
         return doFormatDate(calendar);
     }
+    
     /**
      * Returns a ISO 8601 representation of the given date. This method 
      * is thread safe and non-blocking.
@@ -66,8 +68,7 @@ public class DateUtils {
      * @return ISO 8601 date string, including timezone details
      */
     public static String formatDate(Calendar date) {
-        // Explicitly switch it into UTC before formatting 
-        date.setTimeZone(UTC);
+        // DO NOT switch into UTC  - preserve timezone information
         return doFormatDate(date);
     }
     /**
@@ -88,14 +89,8 @@ public class DateUtils {
         return formatted.substring(0, formatted.length()-1);
     }
     private static String doFormatDate(Calendar calendar) {
-        return String.format(
-                Locale.ROOT,
-                "%04d-%02d-%02dT%02d:%02d:%02dZ",
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH) + 1,
-                calendar.get(Calendar.DAY_OF_MONTH),
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                calendar.get(Calendar.SECOND));
+    	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+    	formatter.setTimeZone(calendar.getTimeZone());    	
+    	return formatter.format(calendar.getTime());
     }
 }

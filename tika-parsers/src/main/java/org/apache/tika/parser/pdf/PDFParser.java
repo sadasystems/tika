@@ -21,12 +21,15 @@ import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jempbox.xmp.XMPMetadata;
@@ -230,16 +233,40 @@ public class PDFParser extends AbstractParser {
         addMetadata(metadata, TikaCoreProperties.TRANSITION_SUBJECT_TO_OO_SUBJECT, info.getSubject());
         addMetadata(metadata, "trapped", info.getTrapped());
             // TODO Remove these in Tika 2.0
-        addMetadata(metadata, "created", info.getCreationDate());
-        addMetadata(metadata, TikaCoreProperties.CREATED, info.getCreationDate());
+        Calendar created = info.getCreationDate();        
+        if (created == null){
+    		SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:m:ss");
+    		created = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    		String createdStr = info.getCustomMetadataValue(COSName.CREATION_DATE.getName());
+    		if (createdStr != null){
+	    		try {
+	    			created.setTime(sdf.parse(createdStr));
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+    		}
+    	}
+        addMetadata(metadata, "created", created);
+        addMetadata(metadata, TikaCoreProperties.CREATED, created);
         Calendar modified = info.getModificationDate();
+        if (modified == null){
+    		SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:m:ss");
+    		modified = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    		String modifiedStr = info.getCustomMetadataValue(COSName.MOD_DATE.getName());
+    		if (modifiedStr != null){
+	    		try {
+	    			modified.setTime(sdf.parse(modifiedStr));
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+    		}
+    	}
         addMetadata(metadata, Metadata.LAST_MODIFIED, modified);
         addMetadata(metadata, TikaCoreProperties.MODIFIED, modified);
 
         // All remaining metadata is custom
         // Copy this over as-is
-        List<String> handledMetadata = Arrays.asList("Author", "Creator", "CreationDate", "ModDate",
-                "Keywords", "Producer", "Subject", "Title", "Trapped");
+        List<String> handledMetadata = Arrays.asList("Author", "Creator", "Keywords", "Producer", "Subject", "Title", "Trapped");
         for (COSName key : info.getCOSObject().keySet()) {
             String name = key.getName();
             if (!handledMetadata.contains(name)) {
@@ -451,7 +478,8 @@ public class PDFParser extends AbstractParser {
 
     private void addMetadata(Metadata metadata, Property property, Calendar value) {
         if (value != null) {
-            metadata.set(property, value.getTime());
+        	//send Calendar info with timezone rather than just the date part
+        	metadata.set(property, value);
         }
     }
 
