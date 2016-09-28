@@ -235,10 +235,10 @@ public class PDFParser extends AbstractParser {
             // TODO Remove these in Tika 2.0
         Calendar created = info.getCreationDate();        
         if (created == null){
-    		SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:m:ss", Locale.US);
-    		created = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US);
     		String createdStr = info.getCustomMetadataValue(COSName.CREATION_DATE.getName());
     		if (createdStr != null){
+    			SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:m:ss", Locale.US);
+        		created = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US);
 	    		try {
 	    			created.setTime(sdf.parse(createdStr));
 				} catch (ParseException e) {
@@ -250,10 +250,10 @@ public class PDFParser extends AbstractParser {
         addMetadata(metadata, TikaCoreProperties.CREATED, created);
         Calendar modified = info.getModificationDate();
         if (modified == null){
-    		SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:m:ss", Locale.US);
-    		modified = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US);
     		String modifiedStr = info.getCustomMetadataValue(COSName.MOD_DATE.getName());
     		if (modifiedStr != null){
+    			SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy HH:m:ss", Locale.US);
+        		modified = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.US);
 	    		try {
 	    			modified.setTime(sdf.parse(modifiedStr));
 				} catch (ParseException e) {
